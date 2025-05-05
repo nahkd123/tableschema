@@ -37,10 +37,12 @@ class JdbcTable<K, R> implements Table<K, R> {
 			String migrateFrom = null;
 			int fromVersion = -1;
 
-			try (var set = sql.getMetaData().getTables(null, null, null, new String[] { "TABLE" })) {
+			try (var set = sql.getMetaData().getTables(null, null, null, null)) {
 				while (set.next()) {
-					String tableName = set.getString("TABLE_NAME");
+					String tableType = set.getString("TABLE_TYPE");
+					if (!tableType.equals("TABLE")) continue;
 
+					String tableName = set.getString("TABLE_NAME");
 					if (tableName.equals(activeTable)) {
 						if (schema.version() == -1) {
 							// -1 always perform migration
