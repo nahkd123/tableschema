@@ -24,8 +24,8 @@ public record JdbcFilter(String sql, JdbcFieldType<?> valueType, Object value, L
 			};
 			String cmpAgainst = parametric ? "?" : ((JdbcFieldType) type).valueToCode(value);
 			String sql = table != null
-				? "[%s].[%s] %s %s".formatted(table, field.label(), cmpOp, cmpAgainst)
-				: "[%s] %s %s".formatted(field.label(), cmpOp, cmpAgainst);
+				? "\"%s\".\"%s\" %s %s".formatted(table, field.label(), cmpOp, cmpAgainst)
+				: "\"%s\" %s %s".formatted(field.label(), cmpOp, cmpAgainst);
 			yield new JdbcFilter(sql, parametric ? type : null, parametric ? value : null, null);
 		}
 		case Filter.Not(Filter<?> child): {

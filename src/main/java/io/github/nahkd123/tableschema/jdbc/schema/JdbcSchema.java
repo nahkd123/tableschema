@@ -24,11 +24,11 @@ public record JdbcSchema<K, R>(JdbcField<R, ?> primaryKey, List<JdbcField<R, ?>>
 	}
 
 	public String createTableCode(String table) {
-		if (fields.size() > 0) return "CREATE TABLE [%s] (%s, %s)".formatted(
+		if (fields.size() > 0) return "CREATE TABLE \"%s\" (%s, %s)".formatted(
 			table,
 			primaryKey.columnDef(true),
 			fields.stream().map(f -> f.columnDef(false)).collect(Collectors.joining(", ")));
-		return "CREATE TABLE [%s] (%s)".formatted(table, primaryKey.columnDef(true));
+		return "CREATE TABLE \"%s\" (%s)".formatted(table, primaryKey.columnDef(true));
 	}
 
 	public String columnNamesCode(String table) {
@@ -40,8 +40,8 @@ public record JdbcSchema<K, R>(JdbcField<R, ?> primaryKey, List<JdbcField<R, ?>>
 
 	public static <R> String columnNamesCode(String table, List<JdbcField<R, ?>> fields) {
 		return fields.stream().map(f -> table != null
-			? "[%s].[%s]".formatted(table, f.label())
-			: "[%s]".formatted(f.label()))
+			? "\"%s\".\"%s\"".formatted(table, f.label())
+			: "\"%s\"".formatted(f.label()))
 			.collect(Collectors.joining(", "));
 	}
 
@@ -49,7 +49,7 @@ public record JdbcSchema<K, R>(JdbcField<R, ?> primaryKey, List<JdbcField<R, ?>>
 		List<JdbcField<R, ?>> fields = new ArrayList<>();
 		fields.add(this.primaryKey);
 		fields.addAll(this.fields);
-		return "INSERT INTO [%s] (%s) VALUES (%s)".formatted(
+		return "INSERT INTO \"%s\" (%s) VALUES (%s)".formatted(
 			table,
 			columnNamesCode(null, fields),
 			fields.stream().map(f -> "?").collect(Collectors.joining(", ")));
@@ -59,9 +59,9 @@ public record JdbcSchema<K, R>(JdbcField<R, ?> primaryKey, List<JdbcField<R, ?>>
 		List<JdbcField<R, ?>> fields = new ArrayList<>();
 		fields.add(this.primaryKey);
 		fields.addAll(this.fields);
-		return "UPDATE [%s] SET %s WHERE [%s].[%s] = ?".formatted(
+		return "UPDATE \"%s\" SET %s WHERE \"%s\".\"%s\" = ?".formatted(
 			table,
-			fields.stream().map(f -> "[%s] = ?".formatted(f.label())).collect(Collectors.joining(", ")),
+			fields.stream().map(f -> "\"%s\" = ?".formatted(f.label())).collect(Collectors.joining(", ")),
 			table,
 			primaryKey.label());
 	}
@@ -88,8 +88,8 @@ public record JdbcSchema<K, R>(JdbcField<R, ?> primaryKey, List<JdbcField<R, ?>>
 		columns.addAll(fields.stream().map(JdbcField::label).toList());
 		columns.retainAll(existingColumns);
 
-		return "INSERT INTO [%s] (%s) SELECT %s FROM [%s]".formatted(
-			to, columns.stream().map(c -> "[%s]".formatted(c)).collect(Collectors.joining(", ")),
-			columns.stream().map(c -> "[%s].[%s]".formatted(from, c)).collect(Collectors.joining(", ")), from);
+		return "INSERT INTO \"%s\" (%s) SELECT %s FROM \"%s\"".formatted(
+			to, columns.stream().map(c -> "\"%s\"".formatted(c)).collect(Collectors.joining(", ")),
+			columns.stream().map(c -> "\"%s\".\"%s\"".formatted(from, c)).collect(Collectors.joining(", ")), from);
 	}
 }

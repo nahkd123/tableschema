@@ -18,15 +18,15 @@ public record JdbcIndex<R>(String name, List<JdbcFilter> filters, List<SortBy<R>
 	}
 
 	public String createIndexCode(String table) {
-		return "CREATE INDEX [%s:indexes:%s] ON [%s] (%s)".formatted(
+		return "CREATE INDEX \"%s:indexes:%s\" ON \"%s\" (%s)".formatted(
 			table, name, table,
 			List.of(
 				filters.stream().map(JdbcFilter::sql),
-				ordering.stream().map(o -> "[%s] %s".formatted(o.field().label(), switch (o.order()) {
+				ordering.stream().map(o -> "\"%s\" %s".formatted(o.field().label(), switch (o.order()) {
 				case ASCENDING -> "ASC";
 				case DESCENDING -> "DESC";
 				})),
-				fields.stream().map(f -> "[%s]".formatted(f)))
+				fields.stream().map(f -> "\"%s\"".formatted(f)))
 				.stream().flatMap(s -> s).collect(Collectors.joining(", ")));
 	}
 }

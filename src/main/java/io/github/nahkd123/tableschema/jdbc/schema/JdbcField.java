@@ -13,7 +13,7 @@ public record JdbcField<R, T>(JdbcFieldType<T> type, String label, Function<R, T
 	}
 
 	public String columnDef(boolean isPrimaryKey) {
-		String out = "[%s] %s".formatted(label, type.sqlType());
+		String out = "\"%s\" %s".formatted(label, type.sqlType());
 		if (isPrimaryKey) out += " PRIMARY KEY";
 
 		for (Constraint<T> c : constraints) out += switch (c) {

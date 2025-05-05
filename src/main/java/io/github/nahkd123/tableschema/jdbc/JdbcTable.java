@@ -92,13 +92,13 @@ class JdbcTable<K, R> implements Table<K, R> {
 
 					if (backup) {
 						String backupName = "%s:backup:%s".formatted(migrateFrom, LocalDateTime.now());
-						s.execute("ALTER TABLE [%s] RENAME TO [%s]".formatted(migrateFrom, backupName));
+						s.execute("ALTER TABLE \"%s\" RENAME TO \"%s\"".formatted(migrateFrom, backupName));
 					} else {
-						s.execute("DROP TABLE [%s]".formatted(migrateFrom));
+						s.execute("DROP TABLE \"%s\"".formatted(migrateFrom));
 					}
 
 					if (!destination.equals(activeTable))
-						s.execute("ALTER TABLE [%s] RENAME TO [%s]".formatted(destination, activeTable));
+						s.execute("ALTER TABLE \"%s\" RENAME TO \"%s\"".formatted(destination, activeTable));
 				}
 			}
 
@@ -115,7 +115,7 @@ class JdbcTable<K, R> implements Table<K, R> {
 	@Override
 	public void drop() {
 		try (var s = sql.createStatement()) {
-			s.execute("DROP TABLE [%s]".formatted(activeTable));
+			s.execute("DROP TABLE \"%s\"".formatted(activeTable));
 		} catch (SQLException e) {
 			throw new RuntimeException("Error while dropping table", e);
 		}
@@ -145,12 +145,13 @@ class JdbcTable<K, R> implements Table<K, R> {
 	@Override
 	public QueryResult<R> query(Filter<R> filter, SortBy<R> ordering) {
 		JdbcFilter jdbcFilter = filter != null ? JdbcFilter.map(activeTable, filter, true) : null;
-		String sql = "SELECT %s FROM [%s]".formatted(schema.columnNamesCode(null), activeTable);
+		String sql = "SELECT %s FROM \"%s\"".formatted(schema.columnNamesCode(null), activeTable);
 		if (jdbcFilter != null) sql += " WHERE %s".formatted(jdbcFilter.sql());
-		if (ordering != null) sql += " ORDER BY [%s] %s".formatted(ordering.field().label(), switch (ordering.order()) {
-		case ASCENDING -> "ASC";
-		case DESCENDING -> "DESC";
-		});
+		if (ordering != null)
+			sql += " ORDER BY \"%s\" %s".formatted(ordering.field().label(), switch (ordering.order()) {
+			case ASCENDING -> "ASC";
+			case DESCENDING -> "DESC";
+			});
 
 		try {
 			PreparedStatement s = this.sql.prepareStatement(sql);
@@ -187,7 +188,7 @@ class JdbcTable<K, R> implements Table<K, R> {
 	@Override
 	public int delete(Filter<R> filter) {
 		JdbcFilter jdbcFilter = filter != null ? JdbcFilter.map(activeTable, filter, true) : null;
-		String sql = "DELETE FROM [%s]".formatted(activeTable);
+		String sql = "DELETE FROM \"%s\"".formatted(activeTable);
 		if (jdbcFilter != null) sql += " WHERE %s".formatted(jdbcFilter.sql());
 
 		try (PreparedStatement s = this.sql.prepareStatement(sql)) {
